@@ -10,9 +10,14 @@ weak.linter.mathlibStandardSet = true
 maxSynthPendingDepth = 3
 
 [[require]]
+name = "Hammer"
+git = "https://github.com/JOSHCLUNE/LeanHammer"
+rev = "main" # Replace this with `rev = "v4.XX.X"` to add LeanHammer for an earlier supported Lean version.
+
+[[require]]
 name = "mathlib"
 scope = "leanprover-community"
-rev = "v4.31.0"
+rev = "v4.32.0"
 
 [[lean_lib]]
 name = "LeanHypergraph2"

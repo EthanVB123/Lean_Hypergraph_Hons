@@ -1,1 +1,1 @@
-import LeanHypergraph2.Basic
+import LeanHypergraph2.HypergraphColourings

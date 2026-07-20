@@ -9,10 +9,12 @@ open MeasureTheory
 open ProbabilityTheory
 open ENNReal
 
-variable {α β : Type*} {x y : α} {s t : Set α} {H : Hypergraph α} {n : Nat}
-variable [Fintype (H.vertexSet)]
+variable {α : Type*} {H : Hypergraph α} {n : Nat}
+variable [Fintype ↑V(H)]
 variable [NeZero n]
-abbrev RandomVertexColouring (H : Hypergraph α) (n : Nat) := H.vertexSet → Fin n
+variable [DecidableEq ↑V(H)]
+/-- does this need to be a variable? -/
+abbrev RandomVertexColouring (H : Hypergraph α) (n : Nat) := ↑H.vertexSet → Fin n
 variable [MeasurableSpace (RandomVertexColouring H n)]
 
 noncomputable def UniformRandomVertexColouringMeasure
@@ -32,10 +34,16 @@ instance randomVertexColouringMeasure_isProbabilityMeasure
     · simp
     · refine ⟨fun _ => (0 : Fin n), trivial⟩
 
-/-- RTP colour of a vertex has uniform distribution -/
+instance randomVertexColouring_isFinite :
+    Fintype (RandomVertexColouring H n) := inferInstance
+
+lemma number_of_colourings : Fintype.card (Ω) = n ^ (Fintype.card (↑V(H))) := by simp
+
+
 theorem RTP_uniform (v : H.vertexSet) :
     ℙ {c : Ω | c v = 0} = 1 / n := by
-    sorry
+        sorry
 
-
+#check Fintype.card_fun
+#synth Fintype (Fin 3 → Fin 4)
 end RandomColouring

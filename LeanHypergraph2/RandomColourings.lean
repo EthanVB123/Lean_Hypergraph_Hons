@@ -70,7 +70,7 @@ lemma expand_colouring_filter :
   ext c
   simp
 
-theorem RTP_uniform (v : H.vertexSet) (i : Fin n):
+theorem each_vertex_has_uniform_colouring (v : H.vertexSet) (i : Fin n):
     ℙ {c : Ω | c v = i} = 1 / n := by
     rw [uniform_measure_is_pi_measure]
     rw [expand_colouring_filter]

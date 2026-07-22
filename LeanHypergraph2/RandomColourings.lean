@@ -64,8 +64,8 @@ lemma uniform_measure_is_pi_measure :
 
 def colourAt (v : H.vertexSet) : Ω → Fin n := fun ω => ω v
 
-lemma hset :
-    {c : Ω | c v = i} = Set.pi ({v} : Set (H.vertexSet))
+lemma expand_colouring_filter :
+    {c : Ω | c v = i} = Set.pi ({v} : Finset (H.vertexSet))
     (fun w => if w = v then ({i} : Set (Fin n)) else Set.univ) := by
   ext c
   simp
@@ -73,15 +73,11 @@ lemma hset :
 theorem RTP_uniform (v : H.vertexSet) (i : Fin n):
     ℙ {c : Ω | c v = i} = 1 / n := by
     rw [uniform_measure_is_pi_measure]
-    rw [hset]
-    simp
+    rw [expand_colouring_filter]
     unfold UniformProductVertexColouringMeasure
-    have hp : (Measure.pi fun x ↦ UniformColourMeasure n) (Function.eval v ⁻¹' {i}) = UniformColourMeasure n {i} := by
-        simp [UniformColourMeasure]
-
-        sorry
-    rw [hp]
-    simp [UniformColourMeasure]
+    unfold UniformColourMeasure
+    rw [Measure.pi_pi_finset]
+    simp
     rw [uniformOn_univ]
     simp
 

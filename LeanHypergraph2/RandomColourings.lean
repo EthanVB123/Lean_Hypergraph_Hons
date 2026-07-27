@@ -11,7 +11,7 @@ open ProbabilityTheory
 open ENNReal
 
 variable {H : Hypergraph α} {n : Nat}
-variable {v : H.vertexSet}
+variable {v : H.vertexSet} {i : Fin n}
 variable [Fintype ↑V(H)]
 variable [NeZero n]
 variable [DecidableEq ↑V(H)]
@@ -70,7 +70,7 @@ lemma expand_colouring_filter :
   ext c
   simp
 
-theorem each_vertex_has_uniform_colouring (v : H.vertexSet) (i : Fin n):
+theorem each_vertex_has_uniform_colouring:
     ℙ {c : Ω | c v = i} = 1 / n := by
     rw [uniform_measure_is_pi_measure]
     rw [expand_colouring_filter]
@@ -80,6 +80,13 @@ theorem each_vertex_has_uniform_colouring (v : H.vertexSet) (i : Fin n):
     simp
     rw [uniformOn_univ]
     simp
+
+lemma colourAt_uniform:
+    ℙ {c : Ω | colourAt v c = i} = 1 / n := by
+    unfold colourAt
+    rw [each_vertex_has_uniform_colouring]
+
+
 
 
 end RandomColouring

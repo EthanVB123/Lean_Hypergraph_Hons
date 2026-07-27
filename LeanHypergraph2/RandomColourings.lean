@@ -86,6 +86,16 @@ lemma colourAt_uniform:
     unfold colourAt
     rw [each_vertex_has_uniform_colouring]
 
+lemma colourAt_independent:
+    ProbabilityTheory.iIndepFun (fun v => colourAt v) ℙ := by
+    rw [uniform_measure_is_pi_measure]
+    unfold UniformProductVertexColouringMeasure
+    unfold colourAt
+    unfold UniformColourMeasure
+    change ProbabilityTheory.iIndepFun (fun v ω => (id : Fin n → Fin n) (ω v)) (Measure.pi (fun _ => uniformOn Set.univ))
+    apply ProbabilityTheory.iIndepFun_pi
+    intro v
+    exact aemeasurable_id
 
 
 

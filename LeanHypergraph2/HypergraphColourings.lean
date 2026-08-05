@@ -1,7 +1,6 @@
 -- Hypergraph Colourings
 
 import Mathlib.Combinatorics.Hypergraph.Basic
-/-- import Hammer -/
 
 namespace HypergraphColouring
 
@@ -23,7 +22,7 @@ abbrev HyperColouring (α : Type*) (n : Nat) := α → Fin n
 
 lemma no_zero_colouring (H: Hypergraph α) (c : HyperColouring α 0) : H.vertexSet = ∅ := by
     ext v
-    simp
+    simp only [mem_empty_iff_false, iff_false]
     exact Fin.elim0 (c v)
 
 def MonochromaticEdge {n} (c : HyperColouring α n) (edge : Set α) : Prop :=
@@ -57,18 +56,12 @@ lemma one_colouring_implies_monochromatic (h : H.IsNonempty) (c : HyperColouring
     intro y hy
     rw [o1 v, o1 y]
 
+
 def adjacency_set (H : Hypergraph α) (v : α) : Set α :=
     { w | H.Adj v w }
 
 def adjacency_finset (H : Hypergraph α) (v : α) [Fintype (adjacency_set H v)] : Finset α :=
     (adjacency_set H v).toFinset
-
-def degree (H : Hypergraph α) (v : α) [Fintype (adjacency_set H v)] : Nat :=
-    (adjacency_finset H v).card
-
-/--def complete_graph_needs_n_colouring (h: H.IsComplete) (c : HyperColouring ) -/
-
-
 
 
 

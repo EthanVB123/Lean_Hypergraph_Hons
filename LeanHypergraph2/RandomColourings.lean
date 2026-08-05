@@ -165,6 +165,24 @@ lemma edge_restricted_proba: ℙ {c : Ω | ∀ v ∈ s , colourAt v c = i} = (1 
   · intro i_1 hi
     exact MeasurableSet.singleton i
 
+lemma monochromatic_eq_union (hs : s.Nonempty) : {c : Ω | ∃ w ∈ s, ∀ v ∈ s, colourAt v c = colourAt w c} = ⋃ i : Fin n, {c : Ω | ∀ v ∈ s, colourAt v c = i} := by
+  ext c
+  constructor
+  · intro hc
+    rcases hc with ⟨w, hw, hcol⟩
+    refine Set.mem_iUnion.mpr ⟨colourAt w c, ?_⟩
+    intro v hv
+    rw [hcol v hv]
+  · intro h
+    rcases Set.mem_iUnion.mp h with ⟨i, hi⟩
+    have hs' : s.Nonempty := hs
+    rcases hs' with ⟨w, hw⟩
+    grind
+
+lemma edge_monochromatic_proba: ℙ {c : Ω | ∃ w ∈ s,∀ v ∈ s , colourAt v c = colourAt w c} = (1 / n) ^ (Fintype.card s - 1) := by
+  sorry
+
+
 lemma two_vertices_same_colour (hvw : v ≠ w):
   ℙ {c : Ω | colourAt v c = colourAt w c} = 1 / n := by
     have h_event : {c : Ω | colourAt v c = colourAt w c} = ⋃ i : Fin n, {c : Ω | colourAt v c = i ∧ colourAt w c = i} := by

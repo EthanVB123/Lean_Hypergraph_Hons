@@ -14,11 +14,14 @@ open ENNReal
 
 variable {H : Hypergraph α} {n : Nat}
 variable {v w : H.vertexSet} {i j : Fin n}
-variable {e : E(H)}
+variable {e : H.edgeSet}
+variable {s : Set ↑V(H)}
 variable [Fintype ↑V(H)]
 variable [NeZero n]
 variable [DecidableEq ↑V(H)]
+
 /-- does this need to be a variable? -/
+
 abbrev RandomVertexColouring (H : Hypergraph α) (n : Nat) := HypergraphColouring.HyperColouring ↑H.vertexSet n
 
 noncomputable def UniformRandomVertexColouringMeasure
@@ -126,21 +129,41 @@ lemma colourAt_measurable : ∀ v : H.vertexSet, Measurable (colourAt (n := n) v
     exact measurable_pi_apply v
 
 
-lemma colourAt_indep
+lemma colourAt_pairwise_indep
     (hvw : v ≠ w) :
     ProbabilityTheory.IndepFun (colourAt v) (colourAt w) ℙ := by
     exact colourAt_independent.indepFun hvw
 
 lemma two_vertices_restricted_proba (hvw : v ≠ w) : ℙ {c : Ω | colourAt v c = i ∧ colourAt w c = j} = (1 / n) * (1 / n) := by
   rw [show {c : Ω | colourAt v c = i ∧ colourAt w c = j} = colourAt v ⁻¹' {i} ∩ colourAt w ⁻¹' {j} by rfl]
-  rw [ProbabilityTheory.IndepFun.measure_inter_preimage_eq_mul (colourAt_indep hvw)]
+  rw [ProbabilityTheory.IndepFun.measure_inter_preimage_eq_mul (colourAt_pairwise_indep hvw)]
   · rw [show colourAt v ⁻¹' {i} = {c | colourAt v c = i} by rfl]
     rw [show colourAt w ⁻¹' {j} = {c | colourAt w c = j} by rfl]
     rw [colourAt_uniform v i, colourAt_uniform w j]
   · exact MeasurableSet.singleton i
   · exact MeasurableSet.singleton j
 
-lemma edge_restricted_proba : ℙ {c : Ω | ∀ ve ∈ e, colourAt ve c = i} = (1 / n) ^ (Fintype.card e) := by
+noncomputable instance set_of_vertices_is_fintype
+    (s : Set ↑V(H)) : Fintype s := by
+  classical
+  exact Fintype.ofFinite s
+
+lemma edge_restricted_proba: ℙ {c : Ω | ∀ v ∈ s , colourAt v c = i} = (1 / n) ^ (Fintype.card s) := by
+  classical
+  have hprob : ∀ v : ↑V(H), ℙ (colourAt v ⁻¹' {i}) = 1 / n := by
+    intro v
+    rw [show colourAt v ⁻¹' {i} = {c | colourAt v c = i} by rfl]
+    exact colourAt_uniform v i
+  let S : Finset (↑V(H)) := s.toFinset
+  have h_event : {c : Ω | ∀ v ∈ s, colourAt v c = i} = ⋂ v ∈ S, colourAt v ⁻¹' {i} := by
+    ext c
+    simp [S]
+  rw [h_event]
+  rw [ProbabilityTheory.iIndepFun.measure_inter_preimage_eq_mul colourAt_independent S]
+  · simp_rw [hprob]
+    simp [S]
+  · intro i_1 hi
+    exact MeasurableSet.singleton i
 
 lemma two_vertices_same_colour (hvw : v ≠ w):
   ℙ {c : Ω | colourAt v c = colourAt w c} = 1 / n := by

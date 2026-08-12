@@ -21,8 +21,8 @@ variable [NeZero n]
 variable [DecidableEq ↑V(H)]
 
 /-- does this need to be a variable? -/
-
-abbrev RandomVertexColouring (H : Hypergraph α) (n : Nat) := HypergraphColouring.HyperColouring ↑H.vertexSet n
+abbrev RandomVertexColouring (H : Hypergraph α) (n : Nat) :=
+  HypergraphColouring.HyperColouring ↑H.vertexSet n
 
 noncomputable def UniformRandomVertexColouringMeasure
     (H : Hypergraph α) (n : Nat) [Fintype (H.vertexSet)] [NeZero n] :
@@ -179,9 +179,26 @@ lemma monochromatic_eq_union (hs : s.Nonempty) : {c : Ω | ∃ w ∈ s, ∀ v �
     rcases hs' with ⟨w, hw⟩
     grind
 
-lemma edge_monochromatic_proba: ℙ {c : Ω | ∃ w ∈ s,∀ v ∈ s , colourAt v c = colourAt w c} = (1 / n) ^ (Fintype.card s - 1) := by
-  sorry
+lemma edge_monochromatic_proba (hs : s.Nonempty): ℙ {c : Ω | ∃ w ∈ s,∀ v ∈ s , colourAt v c = colourAt w c} = (1 / n) ^ (Fintype.card s - 1) := by
+  rw [monochromatic_eq_union]
+  let A : Fin n → Set Ω := fun i => {c | ∀ v ∈ s, colourAt v c = i}
+  have hmeas : ∀ i, MeasurableSet (A i) := by
+    sorry
+  have hdisj : Pairwise (fun i j => Disjoint (A i) (A j)) := by
+    sorry
+  · rw [measure_iUnion hdisj hmeas]
+    unfold A
+    simp_rw [edge_restricted_proba]
+    simp
+     /- ring or grind or smth should really work here, in isabelle pretty sure this would autoclose -/
+    sorry
+    --rw [pow_sub]
+    --nth_rewrite 1 [← inv_inv (↑n : ℝ≥0∞)]
+    --rw [zpow_sub_one]
+  · trivial
 
+
+#check pow_sub
 
 lemma two_vertices_same_colour (hvw : v ≠ w):
   ℙ {c : Ω | colourAt v c = colourAt w c} = 1 / n := by
@@ -203,16 +220,33 @@ lemma two_vertices_same_colour (hvw : v ≠ w):
 def IsNUniform (n : Nat) : Prop :=
   ∀ e : H.edgeSet, Fintype.card e = n
 
+def isMonochromaticEdge (c : RandomVertexColouring H n) (e : H.edgeSet) : Prop :=
+  ∃ i : Fin n, ∀ v : H.vertexSet, v.1 ∈ e.1 →colourAt v c = i
 
-def HasPropertyB (H : Hypergraph α): Prop :=
-  ∃ c : RandomVertexColouring H 2, HypergraphColouring.ProperColouring H c
+def isProperlyColoured (H : Hypergraph α) (c : RandomVertexColouring H n) : Prop :=
+  ∀ e : H.edgeSet, ¬ isMonochromaticEdge c e
 
-theorem erdos_propertyB (h_uniform : IsNUniform (H := H) k) (max_edges : Fintype.card E(H) < 2 ^ (k - 1)) :
+def HasPropertyB (H : Hypergraph α) : Prop :=
+  ∃ c : RandomVertexColouring H 2, isProperlyColoured H c
+
+lemma erdos_propertyB (H : Hypergraph α) [Fintype ↑V(H)] (h_uniform : IsNUniform (H := H) k) (max_edges : Fintype.card E(H) < 2 ^ (k - 1)) :
   HasPropertyB H := by
+  unfold HasPropertyB
+  have singleMonoProba (e : E(H)): UniformRandomVertexColouringMeasure H 2
+      {c : RandomVertexColouring H 2 | isMonochromaticEdge c e} =
+      (1 / 2) ^ (k - 1) := by
+    sorry
+  have sumMonoProba : ∑ e : E(H), UniformRandomVertexColouringMeasure H 2
+      {c : RandomVertexColouring H 2 | isMonochromaticEdge c e} < 1 := by
+    sorry
+  have existsMonoProba : UniformRandomVertexColouringMeasure H 2 -- this seems much simpler in isabelle, check with Chelsea
+      {c : RandomVertexColouring H 2 | ∃ e : E(H), isMonochromaticEdge c e} < 1 := by
+    sorry
+  have zeroMonoProba : UniformRandomVertexColouringMeasure H 2
+      {c : RandomVertexColouring H 2 | isProperlyColoured H c} ≠ 0 := by --note ne zero needed instead of gt zero, the following have can't autosimp gt to ne
+    sorry
+  exact MeasureTheory.nonempty_of_measure_ne_zero zeroMonoProba
 
-  sorry
 
-
-
-
+#check ℙ
 end RandomColouring

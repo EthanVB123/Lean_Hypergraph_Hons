@@ -56,13 +56,4 @@ lemma one_colouring_implies_monochromatic (h : H.IsNonempty) (c : HyperColouring
     intro y hy
     rw [o1 v, o1 y]
 
-
-def adjacency_set (H : Hypergraph α) (v : α) : Set α :=
-    { w | H.Adj v w }
-
-def adjacency_finset (H : Hypergraph α) (v : α) [Fintype (adjacency_set H v)] : Finset α :=
-    (adjacency_set H v).toFinset
-
-
-
 end HypergraphColouring

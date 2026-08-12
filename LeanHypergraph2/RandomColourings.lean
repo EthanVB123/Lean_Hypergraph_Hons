@@ -12,7 +12,7 @@ open MeasureTheory
 open ProbabilityTheory
 open ENNReal
 
-variable {H : Hypergraph α} {n : Nat}
+variable {H : Hypergraph α} {n k : Nat}
 variable {v w : H.vertexSet} {i j : Fin n}
 variable {e : H.edgeSet}
 variable {s : Set ↑V(H)}
@@ -192,13 +192,7 @@ lemma edge_monochromatic_proba (hs : s.Nonempty): ℙ {c : Ω | ∃ w ∈ s,∀ 
     simp
      /- ring or grind or smth should really work here, in isabelle pretty sure this would autoclose -/
     sorry
-    --rw [pow_sub]
-    --nth_rewrite 1 [← inv_inv (↑n : ℝ≥0∞)]
-    --rw [zpow_sub_one]
   · trivial
-
-
-#check pow_sub
 
 lemma two_vertices_same_colour (hvw : v ≠ w):
   ℙ {c : Ω | colourAt v c = colourAt w c} = 1 / n := by
@@ -221,7 +215,7 @@ def IsNUniform (n : Nat) : Prop :=
   ∀ e : H.edgeSet, Fintype.card e = n
 
 def isMonochromaticEdge (c : RandomVertexColouring H n) (e : H.edgeSet) : Prop :=
-  ∃ i : Fin n, ∀ v : H.vertexSet, v.1 ∈ e.1 →colourAt v c = i
+  ∃ i : Fin n, ∀ v : H.vertexSet, v.1 ∈ e.1 → colourAt v c = i
 
 def isProperlyColoured (H : Hypergraph α) (c : RandomVertexColouring H n) : Prop :=
   ∀ e : H.edgeSet, ¬ isMonochromaticEdge c e
@@ -229,24 +223,22 @@ def isProperlyColoured (H : Hypergraph α) (c : RandomVertexColouring H n) : Pro
 def HasPropertyB (H : Hypergraph α) : Prop :=
   ∃ c : RandomVertexColouring H 2, isProperlyColoured H c
 
-lemma erdos_propertyB (H : Hypergraph α) [Fintype ↑V(H)] (h_uniform : IsNUniform (H := H) k) (max_edges : Fintype.card E(H) < 2 ^ (k - 1)) :
+local notation "ℙ₂" => UniformRandomVertexColouringMeasure H 2
+local notation "Ω₂" => RandomVertexColouring H 2
+lemma erdos_propertyB (h_uniform : IsNUniform (H := H) k) (max_edges : Fintype.card E(H) < 2 ^ (k - 1)) :
   HasPropertyB H := by
   unfold HasPropertyB
-  have singleMonoProba (e : E(H)): UniformRandomVertexColouringMeasure H 2
-      {c : RandomVertexColouring H 2 | isMonochromaticEdge c e} =
+  have singleMonoProba (e : E(H)): ℙ₂ {c : Ω₂ | isMonochromaticEdge c e} =
       (1 / 2) ^ (k - 1) := by
     sorry
-  have sumMonoProba : ∑ e : E(H), UniformRandomVertexColouringMeasure H 2
-      {c : RandomVertexColouring H 2 | isMonochromaticEdge c e} < 1 := by
+  have sumMonoProba : ∑ e : E(H), ℙ₂ {c : Ω₂ | isMonochromaticEdge c e} < 1 := by
+    simp [singleMonoProba]
     sorry
-  have existsMonoProba : UniformRandomVertexColouringMeasure H 2 -- this seems much simpler in isabelle, check with Chelsea
-      {c : RandomVertexColouring H 2 | ∃ e : E(H), isMonochromaticEdge c e} < 1 := by
+  have existsMonoProba : ℙ₂ {c : Ω₂ | ∃ e : E(H), isMonochromaticEdge c e} < 1 := by -- this seems much simpler in isabelle, check with Chelsea
     sorry
-  have zeroMonoProba : UniformRandomVertexColouringMeasure H 2
-      {c : RandomVertexColouring H 2 | isProperlyColoured H c} ≠ 0 := by --note ne zero needed instead of gt zero, the following have can't autosimp gt to ne
+  have zeroMonoProba : ℙ₂ {c : Ω₂ | isProperlyColoured H c} ≠ 0 := by --note ne zero needed instead of gt zero, the following have can't autosimp gt to ne
     sorry
   exact MeasureTheory.nonempty_of_measure_ne_zero zeroMonoProba
 
 
-#check ℙ
 end RandomColouring

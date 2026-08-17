@@ -239,15 +239,21 @@ lemma erdos_propertyB (h_uniform : IsNUniform (H := H) k) (max_edges : Fintype.c
   have sumMonoProba : ∑ e : E(H), ℙ₂ {c : Ω₂ | isMonochromaticEdge c e} < 1 := by
     simp [singleMonoProba]
     sorry
-  have existsMonoProba : ℙ₂ {c : Ω₂ | ∃ e : E(H), isMonochromaticEdge c e} < 1 := by -- this seems much simpler in isabelle, check with Chelsea
-    have lt_sum :  ℙ₂ (⋃ i, {c | isMonochromaticEdge c i}) ≤ ∑ i, ℙ₂ {c | isMonochromaticEdge c i} := by
+  have existsMonoProba : ℙ₂ {c : Ω₂ | ∃ e : E(H), isMonochromaticEdge c e} < 1 := by
+    have lt_sum : ℙ₂ (⋃ i, {c | isMonochromaticEdge c i}) ≤ ∑ i, ℙ₂ {c | isMonochromaticEdge c i} := by
       simpa only [Set.mem_iUnion] using (linearExpectationLe ℙ₂ (fun e : E(H) => {c : Ω₂ | isMonochromaticEdge c e}))
     have h_union : ℙ₂ {c | ∃ e, isMonochromaticEdge c e} = ℙ₂ (⋃ i, {c | isMonochromaticEdge c i}) := by
       congr 1; ext c; simp
     exact lt_of_le_of_lt (h_union ▸ lt_sum) sumMonoProba
-    --exact lt_of_le_of_lt lt_sum sumMonoProba
   have zeroMonoProba : ℙ₂ {c : Ω₂ | isProperlyColoured H c} ≠ 0 := by --note ne zero needed instead of gt zero, the following have can't autosimp gt to ne
+    unfold isProperlyColoured
+    rw [show {c | ∀ e : E(H), ¬ isMonochromaticEdge c e} = ({c | ∃ e : E(H), isMonochromaticEdge c e})ᶜ by
+      ext c; simp]
+    rw [measure_compl, measure_univ]
     sorry
+
+
+
   exact MeasureTheory.nonempty_of_measure_ne_zero zeroMonoProba
 
 

@@ -208,9 +208,6 @@ lemma two_vertices_same_colour (hvw : v ≠ w):
     rw [h_event]
     sorry
 
-
-
-
 def IsNUniform (n : Nat) : Prop :=
   ∀ e : H.edgeSet, Fintype.card e = n
 
@@ -222,6 +219,14 @@ def isProperlyColoured (H : Hypergraph α) (c : RandomVertexColouring H n) : Pro
 
 def HasPropertyB (H : Hypergraph α) : Prop :=
   ∃ c : RandomVertexColouring H 2, isProperlyColoured H c
+
+#check Fintype
+
+lemma linearExpectationLe [MeasurableSpace ν] (μ : Measure ν) {ι : Type*} [Fintype ι] (f : ι → Set ν) :
+  μ (⋃ i, f i) ≤ ∑ i, μ (f i) := by
+  -- rw [Set.sUnion_eq_iUnion] -- used sUnion to start with to match Isabelle
+  -- exact MeasureTheory.measure_iUnion_le _
+  sorry
 
 local notation "ℙ₂" => UniformRandomVertexColouringMeasure H 2
 local notation "Ω₂" => RandomVertexColouring H 2
@@ -235,7 +240,12 @@ lemma erdos_propertyB (h_uniform : IsNUniform (H := H) k) (max_edges : Fintype.c
     simp [singleMonoProba]
     sorry
   have existsMonoProba : ℙ₂ {c : Ω₂ | ∃ e : E(H), isMonochromaticEdge c e} < 1 := by -- this seems much simpler in isabelle, check with Chelsea
-    sorry
+    have lt_sum :  ℙ₂ (⋃ i, {c | isMonochromaticEdge c i}) ≤ ∑ i, ℙ₂ {c | isMonochromaticEdge c i} := by
+      simpa only [Set.mem_iUnion] using (linearExpectationLe ℙ₂ (fun e : E(H) => {c : Ω₂ | isMonochromaticEdge c e}))
+    have h_union : ℙ₂ {c | ∃ e, isMonochromaticEdge c e} = ℙ₂ (⋃ i, {c | isMonochromaticEdge c i}) := by
+      congr 1; ext c; simp
+    exact lt_of_le_of_lt (h_union ▸ lt_sum) sumMonoProba
+    --exact lt_of_le_of_lt lt_sum sumMonoProba
   have zeroMonoProba : ℙ₂ {c : Ω₂ | isProperlyColoured H c} ≠ 0 := by --note ne zero needed instead of gt zero, the following have can't autosimp gt to ne
     sorry
   exact MeasureTheory.nonempty_of_measure_ne_zero zeroMonoProba

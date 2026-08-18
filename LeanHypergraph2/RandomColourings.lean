@@ -238,23 +238,27 @@ lemma erdos_propertyB (h_uniform : IsNUniform (H := H) k) (max_edges : Fintype.c
     sorry
   have sumMonoProba : ∑ e : E(H), ℙ₂ {c : Ω₂ | isMonochromaticEdge c e} < 1 := by
     simp [singleMonoProba]
-    sorry
+    have hcard : (E(H)).ncard < 2 ^ (k - 1) := by simpa [Set.ncard_eq_toFinset_card] using max_edges
+    calc (E(H)).ncard * (2 : ℝ≥0∞)⁻¹ ^ (k - 1) = (E(H)).ncard * ((2 : ℝ≥0∞) ^ (k - 1))⁻¹ := by simp [ENNReal.inv_pow]
+      _ = (E(H)).ncard / (2 : ℝ≥0∞) ^ (k - 1) := by simp [div_eq_mul_inv]
+      _ < 1 := by simp [ENNReal.div_lt_iff]; exact_mod_cast hcard
   have existsMonoProba : ℙ₂ {c : Ω₂ | ∃ e : E(H), isMonochromaticEdge c e} < 1 := by
     have lt_sum : ℙ₂ (⋃ i, {c | isMonochromaticEdge c i}) ≤ ∑ i, ℙ₂ {c | isMonochromaticEdge c i} := by
       simpa only [Set.mem_iUnion] using (linearExpectationLe ℙ₂ (fun e : E(H) => {c : Ω₂ | isMonochromaticEdge c e}))
     have h_union : ℙ₂ {c | ∃ e, isMonochromaticEdge c e} = ℙ₂ (⋃ i, {c | isMonochromaticEdge c i}) := by
       congr 1; ext c; simp
     exact lt_of_le_of_lt (h_union ▸ lt_sum) sumMonoProba
-  have zeroMonoProba : ℙ₂ {c : Ω₂ | isProperlyColoured H c} ≠ 0 := by --note ne zero needed instead of gt zero, the following have can't autosimp gt to ne
+  have zeroMonoProba : ℙ₂ {c : Ω₂ | isProperlyColoured H c} > 0 := by --note ne zero needed instead of gt zero, the following have can't autosimp gt to ne
     unfold isProperlyColoured
-    rw [show {c | ∀ e : E(H), ¬ isMonochromaticEdge c e} = ({c | ∃ e : E(H), isMonochromaticEdge c e})ᶜ by
-      ext c; simp]
+    rw [show {c | ∀ e : E(H), ¬ isMonochromaticEdge c e} = ({c | ∃ e : E(H), isMonochromaticEdge c e})ᶜ by ext c; simp]
     rw [measure_compl, measure_univ]
-    sorry
+    --have probPos : (1 : ℝ≥0∞) - ℙ₂ {c | ∃ e, isMonochromaticEdge c e} > 0 := by sorry
+    · sorry
+    · sorry
+    · sorry
 
 
-
-  exact MeasureTheory.nonempty_of_measure_ne_zero zeroMonoProba
-
+  have zeroMonoProba2 : ℙ₂ {c : Ω₂ | isProperlyColoured H c} ≠ 0 := by grind -- is this good practice? pretty sure there is something much simpler
+  exact MeasureTheory.nonempty_of_measure_ne_zero zeroMonoProba2
 
 end RandomColouring

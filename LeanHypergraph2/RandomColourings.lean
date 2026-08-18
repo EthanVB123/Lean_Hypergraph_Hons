@@ -228,6 +228,14 @@ lemma linearExpectationLe [MeasurableSpace ν] (μ : Measure ν) {ι : Type*} [F
   -- exact MeasureTheory.measure_iUnion_le _
   sorry
 
+lemma lt_one_implies_compl_pos [MeasurableSpace ν] (μ : Measure ν) [IsProbabilityMeasure μ] (a : Set ν) (hl : μ a < 1) :
+  μ aᶜ > 0 := by
+  sorry
+
+lemma compl_lt_one_implies_pos [MeasurableSpace ν] (μ : Measure ν) [IsProbabilityMeasure μ] (a : Set ν) (hl : μ aᶜ < 1) :
+  μ a > 0 := by
+  sorry
+
 local notation "ℙ₂" => UniformRandomVertexColouringMeasure H 2
 local notation "Ω₂" => RandomVertexColouring H 2
 lemma erdos_propertyB (h_uniform : IsNUniform (H := H) k) (max_edges : Fintype.card E(H) < 2 ^ (k - 1)) :
@@ -251,13 +259,7 @@ lemma erdos_propertyB (h_uniform : IsNUniform (H := H) k) (max_edges : Fintype.c
   have zeroMonoProba : ℙ₂ {c : Ω₂ | isProperlyColoured H c} > 0 := by --note ne zero needed instead of gt zero, the following have can't autosimp gt to ne
     unfold isProperlyColoured
     rw [show {c | ∀ e : E(H), ¬ isMonochromaticEdge c e} = ({c | ∃ e : E(H), isMonochromaticEdge c e})ᶜ by ext c; simp]
-    rw [measure_compl, measure_univ]
-    --have probPos : (1 : ℝ≥0∞) - ℙ₂ {c | ∃ e, isMonochromaticEdge c e} > 0 := by sorry
-    · sorry
-    · sorry
-    · sorry
-
-
+    exact lt_one_implies_compl_pos ℙ₂ {c | ∃ e, isMonochromaticEdge c e} existsMonoProba
   have zeroMonoProba2 : ℙ₂ {c : Ω₂ | isProperlyColoured H c} ≠ 0 := by grind -- is this good practice? pretty sure there is something much simpler
   exact MeasureTheory.nonempty_of_measure_ne_zero zeroMonoProba2
 

@@ -18,6 +18,7 @@ variable {e : H.edgeSet}
 variable {s : Set ↑V(H)}
 variable [Fintype ↑V(H)]
 variable [NeZero n]
+variable [NeZero k]
 variable [DecidableEq ↑V(H)]
 
 /-- does this need to be a variable? -/
@@ -194,25 +195,11 @@ lemma edge_monochromatic_proba (hs : s.Nonempty): ℙ {c : Ω | ∃ w ∈ s,∀ 
     sorry
   · trivial
 
-lemma two_vertices_same_colour (hvw : v ≠ w):
-  ℙ {c : Ω | colourAt v c = colourAt w c} = 1 / n := by
-    have h_event : {c : Ω | colourAt v c = colourAt w c} = ⋃ i : Fin n, {c : Ω | colourAt v c = i ∧ colourAt w c = i} := by
-      ext c
-      constructor
-      · intro hc
-        refine Set.mem_iUnion.mpr ⟨colourAt v c, ?_⟩
-        exact ⟨rfl, hc.symm⟩
-      · intro h
-        rcases Set.mem_iUnion.mp h with ⟨i, hi⟩
-        exact hi.1.trans hi.2.symm
-    rw [h_event]
-    sorry
-
 def IsNUniform (n : Nat) : Prop :=
   ∀ e : H.edgeSet, Fintype.card e = n
 
 def isMonochromaticEdge (c : RandomVertexColouring H n) (e : H.edgeSet) : Prop :=
-  ∃ i : Fin n, ∀ v : H.vertexSet, v.1 ∈ e.1 → colourAt v c = i
+   ∃ w ∈ {v : H.vertexSet | v.1 ∈ e.1}, ∀ v ∈ {v : H.vertexSet | v.1 ∈ e.1}, colourAt v c = colourAt w c
 
 def isProperlyColoured (H : Hypergraph α) (c : RandomVertexColouring H n) : Prop :=
   ∀ e : H.edgeSet, ¬ isMonochromaticEdge c e
@@ -243,7 +230,25 @@ lemma erdos_propertyB (h_uniform : IsNUniform (H := H) k) (max_edges : Fintype.c
   unfold HasPropertyB
   have singleMonoProba (e : E(H)): ℙ₂ {c : Ω₂ | isMonochromaticEdge c e} =
       (1 / 2) ^ (k - 1) := by
-    sorry
+    unfold isMonochromaticEdge
+    rw [edge_monochromatic_proba]
+    simp
+    congr 1 -- this wasn't auto from simp
+    have heq : ↑e ∩ V(H) = e := by simp
+    rw [heq]
+    have he : (e : Set α).ncard = k := by simpa using h_uniform e
+    rw [he]
+    have hcard : Fintype.card {v : H.vertexSet | v.1 ∈ e.1} = k := by
+      simp
+      have heq : ↑e ∩ V(H) = e := by simp -- is there a simpler way to do this?
+      rw [heq]
+      simpa using h_uniform e
+    have hk : 0 < Fintype.card ↑{v : H.vertexSet | v.1 ∈ e.1} := by
+      rw [hcard]
+      exact Nat.pos_of_ne_zero (NeZero.ne k)
+    have hne : Nonempty ↑{v : H.vertexSet | v.1 ∈ e.1} := Fintype.card_pos_iff.mp hk
+    rcases hne with ⟨v⟩
+    exact ⟨v.1, v.2⟩
   have sumMonoProba : ∑ e : E(H), ℙ₂ {c : Ω₂ | isMonochromaticEdge c e} < 1 := by
     simp [singleMonoProba]
     have hcard : (E(H)).ncard < 2 ^ (k - 1) := by simpa [Set.ncard_eq_toFinset_card] using max_edges

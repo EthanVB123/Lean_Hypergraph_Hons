@@ -211,17 +211,18 @@ lemma Union_bound_events [MeasurableSpace ν] (μ : Measure ν) {ι : Type*} [Fi
   μ (⋃ i, f i) ≤ ∑ i, μ (f i) := by
   simpa using MeasureTheory.measure_iUnion_le f
 
-lemma lt_one_implies_compl_pos [MeasurableSpace ν] (μ : Measure ν) [IsProbabilityMeasure μ] (a : Set ν) (hl : μ a < 1) :
+lemma lt_one_implies_compl_pos [MeasurableSpace ν] (μ : Measure ν) [IsProbabilityMeasure μ] (a : Set ν) (ha : MeasurableSet a) (hl : μ a < 1) :
   μ aᶜ > 0 := by
   rw [prob_compl_eq_one_sub]
   · simp [hl]
-  · sorry
+  · exact ha
 
 local notation "ℙ₂" => UniformRandomVertexColouringMeasure H 2
 local notation "Ω₂" => RandomVertexColouring H 2
 lemma erdos_propertyB (h_uniform : IsNUniform (H := H) k) (max_edges : Fintype.card E(H) < 2 ^ (k - 1)) :
   HasPropertyB H := by
   unfold HasPropertyB
+  have hmeas : MeasurableSet {c : Ω₂ | ∃ e, isMonochromaticEdge c e} := by sorry
   have singleMonoProba (e : E(H)): ℙ₂ {c : Ω₂ | isMonochromaticEdge c e} =
       (1 / 2) ^ (k - 1) := by
     unfold isMonochromaticEdge
@@ -258,7 +259,7 @@ lemma erdos_propertyB (h_uniform : IsNUniform (H := H) k) (max_edges : Fintype.c
   have zeroMonoProba : ℙ₂ {c : Ω₂ | isProperlyColoured H c} > 0 := by --note ne zero needed instead of gt zero, the following have can't autosimp gt to ne
     unfold isProperlyColoured
     rw [show {c | ∀ e : E(H), ¬ isMonochromaticEdge c e} = ({c | ∃ e : E(H), isMonochromaticEdge c e})ᶜ by ext c; simp]
-    exact lt_one_implies_compl_pos ℙ₂ {c | ∃ e, isMonochromaticEdge c e} existsMonoProba
+    exact lt_one_implies_compl_pos ℙ₂ {c | ∃ e, isMonochromaticEdge c e} hmeas existsMonoProba
   have zeroMonoProba2 : ℙ₂ {c : Ω₂ | isProperlyColoured H c} ≠ 0 := by grind -- is this good practice? pretty sure there is something much simpler
   exact MeasureTheory.nonempty_of_measure_ne_zero zeroMonoProba2
 

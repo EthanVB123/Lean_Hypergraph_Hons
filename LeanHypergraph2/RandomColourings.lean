@@ -207,21 +207,15 @@ def isProperlyColoured (H : Hypergraph α) (c : RandomVertexColouring H n) : Pro
 def HasPropertyB (H : Hypergraph α) : Prop :=
   ∃ c : RandomVertexColouring H 2, isProperlyColoured H c
 
-#check Fintype
-
-lemma linearExpectationLe [MeasurableSpace ν] (μ : Measure ν) {ι : Type*} [Fintype ι] (f : ι → Set ν) :
+lemma Union_bound_events [MeasurableSpace ν] (μ : Measure ν) {ι : Type*} [Fintype ι] (f : ι → Set ν) :
   μ (⋃ i, f i) ≤ ∑ i, μ (f i) := by
-  -- rw [Set.sUnion_eq_iUnion] -- used sUnion to start with to match Isabelle
-  -- exact MeasureTheory.measure_iUnion_le _
-  sorry
+  simpa using MeasureTheory.measure_iUnion_le f
 
 lemma lt_one_implies_compl_pos [MeasurableSpace ν] (μ : Measure ν) [IsProbabilityMeasure μ] (a : Set ν) (hl : μ a < 1) :
   μ aᶜ > 0 := by
-  sorry
-
-lemma compl_lt_one_implies_pos [MeasurableSpace ν] (μ : Measure ν) [IsProbabilityMeasure μ] (a : Set ν) (hl : μ aᶜ < 1) :
-  μ a > 0 := by
-  sorry
+  rw [prob_compl_eq_one_sub]
+  · simp [hl]
+  · sorry
 
 local notation "ℙ₂" => UniformRandomVertexColouringMeasure H 2
 local notation "Ω₂" => RandomVertexColouring H 2
@@ -257,7 +251,7 @@ lemma erdos_propertyB (h_uniform : IsNUniform (H := H) k) (max_edges : Fintype.c
       _ < 1 := by simp [ENNReal.div_lt_iff]; exact_mod_cast hcard
   have existsMonoProba : ℙ₂ {c : Ω₂ | ∃ e : E(H), isMonochromaticEdge c e} < 1 := by
     have lt_sum : ℙ₂ (⋃ i, {c | isMonochromaticEdge c i}) ≤ ∑ i, ℙ₂ {c | isMonochromaticEdge c i} := by
-      simpa only [Set.mem_iUnion] using (linearExpectationLe ℙ₂ (fun e : E(H) => {c : Ω₂ | isMonochromaticEdge c e}))
+      simpa only [Set.mem_iUnion] using (Union_bound_events ℙ₂ (fun e : E(H) => {c : Ω₂ | isMonochromaticEdge c e}))
     have h_union : ℙ₂ {c | ∃ e, isMonochromaticEdge c e} = ℙ₂ (⋃ i, {c | isMonochromaticEdge c i}) := by
       congr 1; ext c; simp
     exact lt_of_le_of_lt (h_union ▸ lt_sum) sumMonoProba

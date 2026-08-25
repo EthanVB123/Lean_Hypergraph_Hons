@@ -11,6 +11,7 @@ open Hypergraph
 open MeasureTheory
 open ProbabilityTheory
 open ENNReal
+open Classical
 
 variable {H : Hypergraph α} {n k : Nat}
 variable {v w : H.vertexSet} {i j : Fin n}
@@ -180,11 +181,14 @@ lemma monochromatic_eq_union (hs : s.Nonempty) : {c : Ω | ∃ w ∈ s, ∀ v �
     rcases hs' with ⟨w, hw⟩
     grind
 
+lemma fullyMeasurable (S : Set Ω) : MeasurableSet S := by measurability
+
 lemma edge_monochromatic_proba (hs : s.Nonempty): ℙ {c : Ω | ∃ w ∈ s,∀ v ∈ s , colourAt v c = colourAt w c} = (1 / n) ^ (Fintype.card s - 1) := by
   rw [monochromatic_eq_union]
   let A : Fin n → Set Ω := fun i => {c | ∀ v ∈ s, colourAt v c = i}
   have hmeas : ∀ i, MeasurableSet (A i) := by
-    sorry
+    intro i
+    exact fullyMeasurable _
   have hdisj : Pairwise (fun i j => Disjoint (A i) (A j)) := by
     sorry
   · rw [measure_iUnion hdisj hmeas]
@@ -219,10 +223,12 @@ lemma lt_one_implies_compl_pos [MeasurableSpace ν] (μ : Measure ν) [IsProbabi
 
 local notation "ℙ₂" => UniformRandomVertexColouringMeasure H 2
 local notation "Ω₂" => RandomVertexColouring H 2
+lemma fullyMeasurable2 (S : Set Ω₂) : MeasurableSet S := by measurability -- is this necessary? I want to generalise this
+
 lemma erdos_propertyB (h_uniform : IsNUniform (H := H) k) (max_edges : Fintype.card E(H) < 2 ^ (k - 1)) :
   HasPropertyB H := by
   unfold HasPropertyB
-  have hmeas : MeasurableSet {c : Ω₂ | ∃ e, isMonochromaticEdge c e} := by sorry
+  have hmeas : MeasurableSet {c : Ω₂ | ∃ e, isMonochromaticEdge c e} := by exact fullyMeasurable2 _
   have singleMonoProba (e : E(H)): ℙ₂ {c : Ω₂ | isMonochromaticEdge c e} =
       (1 / 2) ^ (k - 1) := by
     unfold isMonochromaticEdge

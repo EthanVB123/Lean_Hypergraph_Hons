@@ -190,15 +190,27 @@ lemma edge_monochromatic_proba (hs : s.Nonempty): ℙ {c : Ω | ∃ w ∈ s,∀ 
     intro i
     exact fullyMeasurable _
   have hdisj : Pairwise (fun i j => Disjoint (A i) (A j)) := by
-    sorry
+    intro i j hij
+    rw [Set.disjoint_iff_inter_eq_empty]
+    ext c
+    constructor
+    · intro hc
+      rcases hc with ⟨hci, hcj⟩
+      simp only [A, Set.mem_setOf_eq] at hci hcj
+      rcases hs with ⟨v, hv⟩
+      exact (hij ((hci v hv).symm.trans (hcj v hv))).elim
+    · intro hc; exact hc.elim
   · rw [measure_iUnion hdisj hmeas]
     unfold A
     simp_rw [edge_restricted_proba]
     simp
+    sorry
+
+rw [hcard, pow_add]
      /- ring or grind or smth should really work here, in isabelle pretty sure this would autoclose -/
     sorry
   · trivial
-
+#check inv_pow
 def IsNUniform (n : Nat) : Prop :=
   ∀ e : H.edgeSet, Fintype.card e = n
 

@@ -208,8 +208,8 @@ lemma edge_monochromatic_proba (hs : s.Nonempty): ℙ {c : Ω | ∃ w ∈ s,∀ 
     have hs' : 1 ≤ s.ncard := by grind
     nth_rewrite 1 [show s.ncard = (s.ncard - 1) + 1 by omega]
     rw [pow_add]
-    have hn : (n : ℝ≥0∞) ≠ 0 := by simp [NeZero.ne n]
-    have hn_top : (n : ℝ≥0∞) ≠ ∞ := by simp
+    have hn : (n : ℝ≥0∞) ≠ 0 := by simp [NeZero.ne n] -- this wasn't automatic
+    have hn_top : (n : ℝ≥0∞) ≠ ∞ := by simp -- nor was this
     calc ↑n * ((↑n : ℝ≥0∞)⁻¹ ^ (s.ncard - 1) * (↑n)⁻¹ ^ 1) = (↑n)⁻¹ ^ (s.ncard - 1) * (↑n * (↑n)⁻¹) := by rw [pow_one]; ac_rfl
       _ = (↑n)⁻¹ ^ (s.ncard - 1) := by rw [ENNReal.mul_inv_cancel hn hn_top]; grind
   · trivial

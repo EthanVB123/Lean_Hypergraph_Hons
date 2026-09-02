@@ -204,13 +204,17 @@ lemma edge_monochromatic_proba (hs : s.Nonempty): ℙ {c : Ω | ∃ w ∈ s,∀ 
     unfold A
     simp_rw [edge_restricted_proba]
     simp
-    sorry
-
-rw [hcard, pow_add]
-     /- ring or grind or smth should really work here, in isabelle pretty sure this would autoclose -/
-    sorry
+    have hpos : 0 < s.ncard := (Set.ncard_pos).mpr hs
+    have hs' : 1 ≤ s.ncard := by grind
+    nth_rewrite 1 [show s.ncard = (s.ncard - 1) + 1 by omega]
+    rw [pow_add]
+    have hn : (n : ℝ≥0∞) ≠ 0 := by simp [NeZero.ne n]
+    have hn_top : (n : ℝ≥0∞) ≠ ∞ := by simp
+    calc ↑n * ((↑n : ℝ≥0∞)⁻¹ ^ (s.ncard - 1) * (↑n)⁻¹ ^ 1) = (↑n)⁻¹ ^ (s.ncard - 1) * (↑n * (↑n)⁻¹) := by rw [pow_one]; ac_rfl
+      _ = (↑n)⁻¹ ^ (s.ncard - 1) := by rw [ENNReal.mul_inv_cancel hn hn_top]; grind
   · trivial
 #check inv_pow
+#check Set.ncard_pos
 def IsNUniform (n : Nat) : Prop :=
   ∀ e : H.edgeSet, Fintype.card e = n
 

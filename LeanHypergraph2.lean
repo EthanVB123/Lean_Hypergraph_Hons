@@ -1,2 +1,1 @@
-import LeanHypergraph2.HypergraphColourings
 import LeanHypergraph2.RandomColourings

@@ -37,8 +37,6 @@ variable {H : Hypergraph α} {n k : Nat}
 variable {v w : H.vertexSet} {i j : Fin n}
 variable {e : H.edgeSet}
 variable {s : Set ↑V(H)}
-variable [Fintype ↑V(H)]
-variable [NeZero n]
 variable [NeZero k]
 
 /-- does this need to be a variable? -/
@@ -53,8 +51,9 @@ noncomputable def UniformRandomVertexColouringMeasure
 noncomputable def UniformColourMeasure (n : Nat) : Measure (Fin n) :=
     uniformOn Set.univ
 
-noncomputable def UniformProductVertexColouringMeasure : Measure (RandomVertexColouring H n) :=
-    Measure.pi (fun _ : H.vertexSet => UniformColourMeasure n)
+noncomputable def UniformProductVertexColouringMeasure [Fintype ↑V(H)] :
+    Measure (RandomVertexColouring H n) :=
+  Measure.pi (fun _ : H.vertexSet => UniformColourMeasure n)
 
 local notation "Ω" => RandomVertexColouring H n
 local notation "ℙ" => UniformRandomVertexColouringMeasure H n
@@ -67,33 +66,35 @@ instance randomVertexColouringMeasure_isProbabilityMeasure
     · simp
     · refine ⟨fun _ => (0 : Fin n), trivial⟩
 
-noncomputable instance randomVertexColouring_isFinite :
+noncomputable instance randomVertexColouring_isFinite [Fintype ↑V(H)] :
     Fintype (RandomVertexColouring H n) := inferInstance
 
-instance ColouringMeasure_isSigmaFinite :
+instance ColouringMeasure_isSigmaFinite [Fintype ↑V(H)] [NeZero n] :
     SigmaFinite ℙ := inferInstance
 
-noncomputable instance edge_fintype (e : H.edgeSet) : Fintype e := by
+noncomputable instance edge_fintype (e : H.edgeSet) [Fintype ↑V(H)] : Fintype e := by
   have hsub : e.val ⊆ H.vertexSet := by
     apply H.subset_vertexSet_of_mem_edgeSet' e.property
   have hfin : (e : Set α).Finite :=
     (Set.toFinite H.vertexSet).subset hsub
   exact hfin.fintype
 
-noncomputable instance edge_set_fintype : Fintype ↑E(H) := by
+noncomputable instance edge_set_fintype [Fintype ↑V(H)] : Fintype ↑E(H) := by
   have hedgeinpow : ∀ e : ↑E(H), e.val ∈ Set.powerset ↑V(H) := by simp_all
   have hsubpow : ↑E(H) ⊆ Set.powerset ↑V(H) := by intro e he; exact hedgeinpow ⟨e,he⟩
   have hpowfin : (Set.powerset ↑V(H)).Finite := by exact (Set.toFinite ↑V(H)).powerset
   have hfin : (H.edgeSet : Set (Set α)).Finite := by exact hpowfin.subset hsubpow
   exact hfin.fintype
 
-lemma number_of_colourings : Fintype.card (Ω) = n ^ (Fintype.card (↑V(H))) := by simp
+lemma number_of_colourings [Fintype ↑V(H)] : Fintype.card (Ω) = n ^ (Fintype.card (↑V(H))) := by
+  simp
 
 lemma product_of_vertex_functions_is_all_colourings :
-    Set.univ.pi (fun _ : H.vertexSet => (Set.univ : Set (Fin n))) = (Set.univ : Set (RandomVertexColouring H n)) := by
+    Set.univ.pi (fun _ : H.vertexSet => (Set.univ : Set (Fin n)))
+    = (Set.univ : Set (RandomVertexColouring H n)) := by
     grind
 
-lemma uniform_measure_is_pi_measure :
+lemma uniform_measure_is_pi_measure [Fintype ↑V(H)] [NeZero n] :
     ℙ = ℙΠ := by
     unfold UniformRandomVertexColouringMeasure UniformProductVertexColouringMeasure
     rw [← product_of_vertex_functions_is_all_colourings]
@@ -106,7 +107,7 @@ lemma expand_colouring_filter :
     {c : Ω | c v = i} = Set.pi ({v} : Finset (H.vertexSet))
     (fun w => if w = v then ({i} : Set (Fin n)) else Set.univ) := by grind
 
-theorem each_vertex_has_uniform_colouring :
+theorem each_vertex_has_uniform_colouring [Fintype ↑V(H)] [NeZero n] :
     ℙ {c : Ω | c v = i} = 1 / n := by
     rw [uniform_measure_is_pi_measure, expand_colouring_filter]
     unfold UniformProductVertexColouringMeasure UniformColourMeasure
@@ -118,43 +119,47 @@ theorem each_vertex_has_uniform_colouring :
 lemma colourAt_preimage_eq_restriction (v : H.vertexSet) (i : Fin n) :
     colourAt v ⁻¹' {i} = {c : Ω | colourAt v c = i} := by rfl
 
-lemma colourAt_uniform (v : H.vertexSet) (i : Fin n) :
+lemma colourAt_uniform [Fintype ↑V(H)] [NeZero n] (v : H.vertexSet) (i : Fin n) :
     ℙ {c : Ω | colourAt v c = i} = 1 / n := by
     unfold colourAt; rw [each_vertex_has_uniform_colouring]
 
-theorem each_vertex_has_uniform_colouring' (v : H.vertexSet) (i : Fin n) :
+theorem each_vertex_has_uniform_colouring'
+    [Fintype ↑V(H)] [NeZero n] (v : H.vertexSet) (i : Fin n) :
     ℙ (colourAt v ⁻¹' {i}) = 1 / n := by
   rw [colourAt_preimage_eq_restriction v i, colourAt_uniform v i]
 
-lemma colourAt_independent : ProbabilityTheory.iIndepFun (fun v => colourAt v) ℙ := by
-    rw [uniform_measure_is_pi_measure]
-    unfold UniformProductVertexColouringMeasure colourAt UniformColourMeasure
-    change ProbabilityTheory.iIndepFun (fun v ω => (id : Fin n → Fin n) (ω v)) (Measure.pi (fun _ => uniformOn Set.univ))
-    apply ProbabilityTheory.iIndepFun_pi
-    intro v
-    exact aemeasurable_id
+lemma colourAt_independent [Fintype ↑V(H)] [NeZero n] :
+    ProbabilityTheory.iIndepFun (fun v => colourAt v) ℙ := by
+  rw [uniform_measure_is_pi_measure]
+  unfold UniformProductVertexColouringMeasure colourAt UniformColourMeasure
+  change ProbabilityTheory.iIndepFun (fun v ω => (id : Fin n → Fin n) (ω v))
+    (Measure.pi (fun _ => uniformOn Set.univ))
+  apply ProbabilityTheory.iIndepFun_pi
+  intro v
+  exact aemeasurable_id
 
 lemma colourAt_measurable : ∀ v : H.vertexSet, Measurable (colourAt (n := n) v) := by
     intro v; exact measurable_pi_apply v
 
-lemma colourAt_pairwise_indep (hvw : v ≠ w) :
+lemma colourAt_pairwise_indep [Fintype ↑V(H)] [NeZero n] (hvw : v ≠ w) :
     ProbabilityTheory.IndepFun (colourAt v) (colourAt w) ℙ := by
   exact colourAt_independent.indepFun hvw
 
-lemma two_vertices_restricted_proba (hvw : v ≠ w) : ℙ {c : Ω | colourAt v c = i ∧ colourAt w c = j}
-    = (1 / n) * (1 / n) := by
-  rw [show {c : Ω | colourAt v c = i ∧ colourAt w c = j} = colourAt v ⁻¹' {i} ∩ colourAt w ⁻¹' {j} by rfl]
+lemma two_vertices_restricted_proba [Fintype ↑V(H)] [NeZero n] (hvw : v ≠ w) :
+    ℙ {c : Ω | colourAt v c = i ∧ colourAt w c = j} = (1 / n) * (1 / n) := by
+  rw [show {c : Ω | colourAt v c = i ∧ colourAt w c = j}
+    = colourAt v ⁻¹' {i} ∩ colourAt w ⁻¹' {j} by rfl]
   rw [ProbabilityTheory.IndepFun.measure_inter_preimage_eq_mul (colourAt_pairwise_indep hvw)]
   · rw [each_vertex_has_uniform_colouring' v i, each_vertex_has_uniform_colouring' w j]
   · exact MeasurableSet.singleton i
   · exact MeasurableSet.singleton j
 
 noncomputable instance set_of_vertices_is_fintype
-    (s : Set ↑V(H)) : Fintype s := by
+    (s : Set ↑V(H)) [Fintype ↑V(H)] : Fintype s := by
   classical
   exact Fintype.ofFinite s
 
-lemma edge_restricted_proba : ℙ {c : Ω | ∀ v ∈ s , colourAt v c = i}
+lemma edge_restricted_proba [Fintype ↑V(H)] [NeZero n] : ℙ {c : Ω | ∀ v ∈ s , colourAt v c = i}
     = (1 / n) ^ (Fintype.card s) := by
   classical
   have hprob : ∀ v : ↑V(H), ℙ (colourAt v ⁻¹' {i}) = 1 / n := by
@@ -169,7 +174,9 @@ lemma edge_restricted_proba : ℙ {c : Ω | ∀ v ∈ s , colourAt v c = i}
     simp
   · simp_all
 
-lemma monochromatic_eq_union (hs : s.Nonempty) : {c : Ω | ∃ w ∈ s, ∀ v ∈ s, colourAt v c = colourAt w c} = ⋃ i : Fin n, {c : Ω | ∀ v ∈ s, colourAt v c = i} := by
+lemma monochromatic_eq_union (hs : s.Nonempty) :
+    {c : Ω | ∃ w ∈ s, ∀ v ∈ s, colourAt v c = colourAt w c} = ⋃ i : Fin n,
+    {c : Ω | ∀ v ∈ s, colourAt v c = i} := by
   ext c
   constructor
   · intro hc
@@ -183,9 +190,12 @@ lemma monochromatic_eq_union (hs : s.Nonempty) : {c : Ω | ∃ w ∈ s, ∀ v �
     rcases hs' with ⟨w, hw⟩
     grind
 
-lemma fullyMeasurable (n : ℕ) (S : Set (RandomVertexColouring H n)) : MeasurableSet S := by measurability
+set_option linter.unusedFintypeInType false in -- necessary but linter complains
+lemma fullyMeasurable (n : ℕ) [Fintype ↑V(H)] [NeZero n] (S : Set (RandomVertexColouring H n)) :
+    MeasurableSet S := by measurability
 
-lemma edge_monochromatic_proba (hs : s.Nonempty): ℙ {c : Ω | ∃ w ∈ s,∀ v ∈ s , colourAt v c = colourAt w c}
+lemma edge_monochromatic_proba [Fintype ↑V(H)] [NeZero n] (hs : s.Nonempty) :
+    ℙ {c : Ω | ∃ w ∈ s,∀ v ∈ s , colourAt v c = colourAt w c}
     = (1 / n) ^ (Fintype.card s - 1) := by
   rw [monochromatic_eq_union]
   · let A : Fin n → Set Ω := fun i => {c | ∀ v ∈ s, colourAt v c = i}
@@ -206,7 +216,8 @@ lemma edge_monochromatic_proba (hs : s.Nonempty): ℙ {c : Ω | ∃ w ∈ s,∀ 
     rw [measure_iUnion hdisj hmeas]
     unfold A
     simp_rw [edge_restricted_proba]
-    simp
+    simp only [one_div, fintypeCard_eq_ncard, tsum_fintype, Finset.sum_const,
+      Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
     have hpos : 0 < s.ncard := (Set.ncard_pos).mpr hs
     have hs' : 1 ≤ s.ncard := by grind
     nth_rewrite 1 [show s.ncard = (s.ncard - 1) + 1 by omega]
@@ -217,7 +228,7 @@ lemma edge_monochromatic_proba (hs : s.Nonempty): ℙ {c : Ω | ∃ w ∈ s,∀ 
       _ = (↑n)⁻¹ ^ (s.ncard - 1) := by rw [ENNReal.mul_inv_cancel hn hn_top]; grind
   · trivial
 
-def IsNUniform (n : Nat) : Prop :=
+def IsNUniform (n : Nat) [Fintype ↑V(H)] : Prop :=
   ∀ e : H.edgeSet, Fintype.card e = n
 
 def isMonochromaticEdge (c : RandomVertexColouring H n) (e : H.edgeSet) : Prop :=
@@ -229,11 +240,13 @@ def isProperlyColoured (H : Hypergraph α) (c : RandomVertexColouring H n) : Pro
 def HasPropertyB (H : Hypergraph α) : Prop :=
   ∃ c : RandomVertexColouring H 2, isProperlyColoured H c
 
-lemma Union_bound_events [MeasurableSpace ν] (μ : Measure ν) {ι : Type*} [Fintype ι] (f : ι → Set ν) :
+lemma Union_bound_events [MeasurableSpace ν] (μ : Measure ν)
+    {ι : Type*} [Fintype ι] (f : ι → Set ν) :
   μ (⋃ i, f i) ≤ ∑ i, μ (f i) := by
   simpa using MeasureTheory.measure_iUnion_le f
 
-lemma lt_one_implies_compl_pos [MeasurableSpace ν] (μ : Measure ν) [IsProbabilityMeasure μ] (a : Set ν) (ha : MeasurableSet a) (hl : μ a < 1) :
+lemma lt_one_implies_compl_pos [MeasurableSpace ν] (μ : Measure ν)
+    [IsProbabilityMeasure μ] (a : Set ν) (ha : MeasurableSet a) (hl : μ a < 1) :
   μ aᶜ > 0 := by
   rw [prob_compl_eq_one_sub]
   · simp [hl]
@@ -242,7 +255,8 @@ lemma lt_one_implies_compl_pos [MeasurableSpace ν] (μ : Measure ν) [IsProbabi
 local notation "ℙ₂" => UniformRandomVertexColouringMeasure H 2
 local notation "Ω₂" => RandomVertexColouring H 2
 
-lemma erdos_propertyB (h_uniform : IsNUniform (H := H) k) (max_edges : Fintype.card E(H) < 2 ^ (k - 1)) :
+lemma erdos_propertyB [Fintype ↑V(H)] (h_uniform : IsNUniform (H := H) k)
+    (max_edges : Fintype.card E(H) < 2 ^ (k - 1)) :
   HasPropertyB H := by
   unfold HasPropertyB
   have hmeas : MeasurableSet {c : Ω₂ | ∃ e, isMonochromaticEdge c e} := by exact fullyMeasurable 2 _
@@ -250,7 +264,7 @@ lemma erdos_propertyB (h_uniform : IsNUniform (H := H) k) (max_edges : Fintype.c
       (1 / 2) ^ (k - 1) := by
     unfold isMonochromaticEdge
     rw [edge_monochromatic_proba]
-    simp
+    simp only [Nat.cast_ofNat, one_div, fintypeCard_eq_ncard, ncard_subtype, setOf_mem_eq]
     congr 1 -- this wasn't auto from simp
     rw [show ↑e ∩ V(H) = e from by simp]
     rw [show (e : Set α).ncard = k from by simpa using h_uniform e]
@@ -285,5 +299,15 @@ lemma erdos_propertyB (h_uniform : IsNUniform (H := H) k) (max_edges : Fintype.c
     exact lt_one_implies_compl_pos ℙ₂ {c | ∃ e, isMonochromaticEdge c e} hmeas existsMonoProba
   have zeroMonoProba2 : ℙ₂ {c : Ω₂ | isProperlyColoured H c} ≠ 0 := by grind
   exact MeasureTheory.nonempty_of_measure_ne_zero zeroMonoProba2
+/-
+noncomputable def neighbouringEdges (e : ↑E(H)) : Finset E(H) :=
+  (Set.toFinset {f : ↑E(H) | f ≠ e ∧ ((f : Set α) ∩ (e : Set α)).Nonempty})
 
+lemma lll_propertyB (k d : ℕ) [NeZero k] (h_minedgelength : ∀ e : H.edgeSet, Fintype.card e ≥ k)
+    (h_maxneighbouringedges : ∀ e : H.edgeSet, Fintype.card (neighbouringEdges e) ≤ d)
+    (h_condition : Fintype.card (E(H)) * (d + 1) ≤ 2^(k - 1)) :
+    HasPropertyB H := by
+  unfold HasPropertyB
+  sorry
+-/
 end RandomColouring

@@ -164,7 +164,7 @@ for i in {1..10}; do
 
     /usr/bin/time -v \
         lake env lean \
-        LeanHypergraph2/HypergraphColourings.lean \
+        LeanHypergraph2/RandomColourings.lean \
         2>&1 | tee "$LOG_DIR/individual_file_${i}.log"
 
     BUILD_STATUS=${PIPESTATUS[0]}

@@ -219,7 +219,6 @@ lemma edge_monochromatic_proba [Fintype ↑V(H)] [NeZero n] (hs : s.Nonempty) :
     simp only [one_div, fintypeCard_eq_ncard, tsum_fintype, Finset.sum_const,
       Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
     have hpos : 0 < s.ncard := (Set.ncard_pos).mpr hs
-    have hs' : 1 ≤ s.ncard := by grind
     nth_rewrite 1 [show s.ncard = (s.ncard - 1) + 1 by omega]
     rw [pow_add]
     have hn : (n : ℝ≥0∞) ≠ 0 := by simp [NeZero.ne n] -- this wasn't automatic
@@ -299,15 +298,5 @@ lemma erdos_propertyB [Fintype ↑V(H)] (h_uniform : IsNUniform (H := H) k)
     exact lt_one_implies_compl_pos ℙ₂ {c | ∃ e, isMonochromaticEdge c e} hmeas existsMonoProba
   have zeroMonoProba2 : ℙ₂ {c : Ω₂ | isProperlyColoured H c} ≠ 0 := by grind
   exact MeasureTheory.nonempty_of_measure_ne_zero zeroMonoProba2
-/-
-noncomputable def neighbouringEdges (e : ↑E(H)) : Finset E(H) :=
-  (Set.toFinset {f : ↑E(H) | f ≠ e ∧ ((f : Set α) ∩ (e : Set α)).Nonempty})
 
-lemma lll_propertyB (k d : ℕ) [NeZero k] (h_minedgelength : ∀ e : H.edgeSet, Fintype.card e ≥ k)
-    (h_maxneighbouringedges : ∀ e : H.edgeSet, Fintype.card (neighbouringEdges e) ≤ d)
-    (h_condition : Fintype.card (E(H)) * (d + 1) ≤ 2^(k - 1)) :
-    HasPropertyB H := by
-  unfold HasPropertyB
-  sorry
--/
 end RandomColouring

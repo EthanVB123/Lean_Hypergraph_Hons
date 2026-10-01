@@ -41,19 +41,4 @@ lemma empty_hypergraph_is_properly_coloured {n} (H : Hypergraph α) (c : HyperCo
     intro c hc
     simp [emptyedges] at hc
 
-lemma one_colouring_implies_monochromatic (h : H.IsNonempty) (c : HyperColouring α 1) :
-    ¬ IsTrivial H → ∀ e ∈ H.edgeSet, MonochromaticEdge c e := by
-    intro h' e he
-    simp [MonochromaticEdge]
-    simp [IsTrivial] at h'
-    simp [IsNonempty] at h
-    have l : e.Nonempty := sorry
-    have o1 : ∀ m , c m = 0 := by
-        intro m
-        exact Fin.fin_one_eq_zero (c m)
-    rcases l with ⟨v, hv⟩
-    refine ⟨ v, hv, ?_ ⟩
-    intro y hy
-    rw [o1 v, o1 y]
-
 end HypergraphColouring

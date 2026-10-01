@@ -1,29 +1,13 @@
 /-
 copyright (c) 2026 Ethan van Bruchem. All rights reserved.
-Released under Apache 2.0 license as will be described in the file LICENSE, when it exists.
+Released under Apache 2.0 license as be described in the file LICENSE.txt
 Authors: Ethan van Bruchem
 -/
 import Mathlib.Combinatorics.Hypergraph.Basic
 import Mathlib.MeasureTheory.Measure.ProbabilityMeasure
 import Mathlib.Probability.Independence.Basic
 import LeanHypergraph2.HypergraphColourings
-/-!
-# Random colourings of hypergraphs
 
-In this file I write about random hypergraph colourings through the lens of the probabilistic method.
-
-## Main results
-
-- ...
-
-## Notation
-
-- ...
-
-## References
-
-See my paper lol and Chelsea's work. Cite properly later :)
--/
 namespace RandomColouring
 
 open Set

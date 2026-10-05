@@ -1,5 +1,8 @@
--- Hypergraph Colourings
-
+/-
+copyright (c) 2026 Ethan van Bruchem. All rights reserved.
+Released under Apache 2.0 license as be described in the file LICENSE.txt
+Authors: Ethan van Bruchem
+-/
 import Mathlib.Combinatorics.Hypergraph.Basic
 
 namespace HypergraphColouring
@@ -8,15 +11,6 @@ open Set
 open Hypergraph
 
 variable {α β : Type*} {x y : α} {s t : Set α} {H : Hypergraph α}
-
-/--
-@[ext]
-structure HyperColouring (α: Type*) (n : Nat) where
-    /-- The original hypergraph -/
-    hypergraph: Hypergraph α
-    /-- The colouring function -/
-    colouring: α → Fin n
--/
 
 abbrev HyperColouring (α : Type*) (n : Nat) := α → Fin n
 
